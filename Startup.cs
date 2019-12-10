@@ -16,6 +16,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using Microsoft.AspNetCore.Mvc.Cors.Internal;
 
 namespace SaitynuProjektas
 {
@@ -27,7 +28,7 @@ namespace SaitynuProjektas
         {
             Configuration = configuration;
         }
-
+        readonly string MyAllowSpecificOrigins = "_myAllowSpecificOrigins";
         public IConfiguration Configuration { get; }
 
         // This method gets called by the runtime. Use this method to add services to the container.
@@ -58,6 +59,31 @@ namespace SaitynuProjektas
                     };
                 });
 
+            //services.AddCors(options =>
+            //{
+            //    options.AddPolicy(MyAllowSpecificOrigins,
+            //    builder =>
+            //    {
+            //        builder.WithOrigins("*");
+            //    });
+            //});
+
+            // Add Cors
+            services.AddCors(o => o.AddPolicy("MyPolicy", builder =>
+            {
+                builder.AllowAnyOrigin()
+                       .AllowAnyMethod()
+                       .AllowAnyHeader();
+            }));
+
+            // Add framework services.
+            services.AddMvc();
+            services.Configure<MvcOptions>(options =>
+            {
+                options.Filters.Add(new CorsAuthorizationFilterFactory("MyPolicy"));
+            });
+
+
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
         }
 
@@ -74,6 +100,10 @@ namespace SaitynuProjektas
                 app.UseHsts();
             }
 
+
+            //app.UseCors(MyAllowSpecificOrigins);
+            // Enable Cors
+            app.UseCors("MyPolicy");
             app.UseHttpsRedirection();
             app.UseAuthentication();
             app.UseMvc();

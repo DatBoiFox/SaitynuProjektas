@@ -5,11 +5,11 @@ using System.Threading.Tasks;
 
 namespace SaitynuProjektas.Models
 {
-    public class MovieBinder
+    public class SimpleUserScore
     {
-        public string title { get; set; }
         public int id { get; set; }
-        public DateTime releaseDate { get; set; }
-        public int directorId { get; set; }
+        public int movieId { get; set; }
+        public int userId { get; set; }
+        public float score { get; set; }
     }
 }

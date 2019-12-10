@@ -45,10 +45,11 @@ namespace SaitynuProjektas.Controllers
         [HttpGet("{id}/movies")]
         public async Task<ActionResult<List<Movie>>> GetDirectorMovies(int id)
         {
-            var req = await _context.Directors.Include(movies => movies.movies).FirstOrDefaultAsync(i => i.id == id);
+            //var req = await _context.Directors.Include(movies => movies.movies).FirstOrDefaultAsync(i => i.id == id);
+            var req = await _context.Movies.Include(genres => genres.movieGenres).ThenInclude(g => g.genre).Include(director => director.director).Where(ids => ids.director.id == id).ToListAsync();//FirstOrDefaultAsync(i => i.id == id);
             try
             {
-                return req.movies;
+                return req;
             }
             catch(Exception e)
             {

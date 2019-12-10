@@ -111,7 +111,7 @@ namespace SaitynuProjektas.Controllers
             var token = new JwtSecurityToken(
                 issuer: "smesk.in",
                 audience: "readers",
-                expires: DateTime.Now.AddMinutes(1),
+                expires: DateTime.Now.AddMinutes(30),
                 signingCredentials: signingCredentials,
                 claims: claims
             );
@@ -120,7 +120,7 @@ namespace SaitynuProjektas.Controllers
             return Ok(new JwtSecurityTokenHandler().WriteToken(token));
         }
 
-        private string GetAuthorizationToken(string userLevel)
+        private string GetAuthorizationToken(string userLevel, int id)
         {
             if (userLevel.Equals("0"))
             {
@@ -138,13 +138,15 @@ namespace SaitynuProjektas.Controllers
                 //claims.Add(new Claim(ClaimTypes.Role, "Reader"));
                 //claims.Add(new Claim("Our_Custom_Claim", "Our custom value"));
                 //claims.Add(new Claim("Id", "110"));
+                claims.Add(new Claim("Id", id + ""));
+                claims.Add(new Claim("Role", "User"));
 
 
                 //create token
                 var token = new JwtSecurityToken(
                     issuer: "smesk.in",
                     audience: "readers",
-                    expires: DateTime.Now.AddMinutes(1),
+                    expires: DateTime.Now.AddMinutes(30),
                     signingCredentials: signingCredentials,
                     claims: claims
                 );
@@ -167,14 +169,15 @@ namespace SaitynuProjektas.Controllers
                 claims.Add(new Claim(ClaimTypes.Role, "Administrator"));
                 //claims.Add(new Claim(ClaimTypes.Role, "Reader"));
                 //claims.Add(new Claim("Our_Custom_Claim", "Our custom value"));
-                //claims.Add(new Claim("Id", "110"));
+                claims.Add(new Claim("Id", id+""));
+                claims.Add(new Claim("Role", "Administrator"));
 
 
                 //create token
                 var token = new JwtSecurityToken(
                     issuer: "smesk.in",
                     audience: "readers",
-                    expires: DateTime.Now.AddMinutes(1),
+                    expires: DateTime.Now.AddMinutes(30),
                     signingCredentials: signingCredentials,
                     claims: claims
                 );
@@ -204,7 +207,7 @@ namespace SaitynuProjektas.Controllers
 
             if (user != null)
             {
-                return Ok(GetAuthorizationToken(user.uerLevel));
+                return Ok(GetAuthorizationToken(user.uerLevel, user.id));
             }
 
             //_context.Users.Add(user);
@@ -212,6 +215,15 @@ namespace SaitynuProjektas.Controllers
 
             //return CreatedAtAction("GetUser", new { id = user.id }, user);
             return Unauthorized();
+        }
+
+        [HttpGet("test")]
+        public ActionResult Test()
+        {
+            var userID = User.Claims.Where(a => a.Type == ClaimTypes.NameIdentifier).FirstOrDefault().Value;
+
+            //return token
+            return Ok();
         }
 
     }

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Web.Http.Cors;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -12,6 +13,7 @@ namespace SaitynuProjektas.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [EnableCors(origins: "https://localhost:44324/api/users", headers: "*", methods: "*")]
     public class UsersController : ControllerBase
     {
         private readonly DataBaseContext _context;
@@ -207,13 +209,22 @@ namespace SaitynuProjektas.Controllers
 
         // POST: api/Users
         [HttpPost]
-        [Authorize(Roles = "Administrator, User")]
-        public async Task<ActionResult<User>> PostUser(User user)
+        //[Authorize(Roles = "Administrator, User")]
+        public async Task<ActionResult<User>> PostUser(SimpleUser user)
         {
-            _context.Users.Add(user);
+            User u = new User();
+            u.name = user.name;
+            u.surname = user.surname;
+            u.nickName = user.nickName;
+            u.password = user.password;
+            u.planToWatchMovies = new List<PlanToWatch>();
+            u.uerLevel = "0";
+            u.userScores = new List<UserScore>();
+
+            _context.Users.Add(u);
             await _context.SaveChangesAsync();
 
-            return CreatedAtAction("GetUser", new { id = user.id }, user);
+            return CreatedAtAction("GetUser", new { id = u.id }, user);
         }
 
         // DELETE: api/Users/5

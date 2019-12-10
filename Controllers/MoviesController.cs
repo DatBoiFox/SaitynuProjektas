@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Web.Http.Cors;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -12,6 +13,7 @@ namespace SaitynuProjektas.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [EnableCors(origins: "https://localhost:44324/api/movies", headers: "*", methods: "*")]
     public class MoviesController : ControllerBase
     {
         private readonly DataBaseContext _context;
@@ -26,9 +28,10 @@ namespace SaitynuProjektas.Controllers
         public async Task<ActionResult<IEnumerable<Movie>>> GetMovies()
         {
             return await _context.Movies
-                //.Include(directors => directors.director)
-                //.Include(genres => genres.movieGenres)
-                //.ThenInclude(g => g.genre)
+                .Include(directors => directors.director)
+                .Include(userScores => userScores.userScores)
+                .Include(genres => genres.movieGenres)
+                .ThenInclude(g => g.genre)
                 .ToListAsync();
 
             //var q = from e in _context.Movies where !e.userScores.Equals(null) select e;
@@ -139,14 +142,20 @@ namespace SaitynuProjektas.Controllers
         // PUT: api/Movies/5
         [HttpPut("{id}")]
         [Authorize(Roles = "Administrator")]
-        public async Task<IActionResult> PutMovie(int id, Movie movie)
+        public async Task<IActionResult> PutMovie(int id, MovieBinder movie)
         {
+            Movie m = new Movie();
+            m.id = movie.id;
+            m.releaseDate = movie.releaseDate;
+            m.title = movie.title;
+            
+            m.director = await _context.Directors.FindAsync(movie.directorId);
             if (id != movie.id)
             {
                 return BadRequest();
             }
 
-            _context.Entry(movie).State = EntityState.Modified;
+            _context.Entry(m).State = EntityState.Modified;
 
             try
             {
@@ -166,6 +175,7 @@ namespace SaitynuProjektas.Controllers
 
             return Ok();
         }
+
 
         // POST: api/Movies
         [HttpPost]
